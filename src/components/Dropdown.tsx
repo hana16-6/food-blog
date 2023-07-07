@@ -1,0 +1,122 @@
+import React, { useState, useEffect, createRef } from "react";
+import { IconDots } from "@tabler/icons-react";
+
+/**
+ * @usage
+
+- use `label` to change displayed text (can be text or icon)
+- use `isOpen` to change init state for showing dropdown
+- use `noArrow` to hide dropdown arrow
+- use `toLeft` to change direction from left to right
+- use `className` to add class to dropdown wrapper
+
+* @example
+
+<Dropdown noArrow />
+<Dropdown label={'Dropdown'} />
+<Dropdown label={<TbGridDots />} />
+<Dropdown isOpen={true} />
+<Dropdown noArrow toLeft />
+<Dropdown >
+	...
+</Dropdown>
+
+ * @param {Object} props 
+ * @returns 
+ */
+function Dropdown(props: PropsType) {
+  const [isOpen, setIsOpen] = useState(props.isOpen);
+  const [dropdownMenuRef] = useState(createRef<HTMLDivElement>());
+  const [dropdownToggleRef] = useState(createRef<HTMLDivElement>());
+
+  const onToggleClick = () => {
+    setIsOpen((prevState) => !prevState);
+  };
+
+  useEffect(() => {
+    // Assign click handler to listen the click to close the dropdown when clicked outside
+    document.addEventListener("click", onClickOutside);
+
+    return () => {
+      // Remove the listener
+      document.removeEventListener("click", onClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onClickOutside = (evt: Event) => {
+    const ele = evt.target as HTMLElement;
+
+    if (
+      !dropdownMenuRef.current?.contains(ele) &&
+      !dropdownToggleRef.current?.contains(ele)
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div
+      className={`dropdown ${props.className} ${props.toLeft ? "to-left" : ""}`}
+    >
+      <span
+        className={`dropdown-toggle ${props.noArrow ? "no-arrow" : ""}`}
+        ref={dropdownToggleRef}
+        onClick={onToggleClick}
+      >
+        {props.label}
+      </span>
+
+      <div
+        className={`dropdown-menu ${isOpen ? "open" : ""}`}
+        ref={dropdownMenuRef}
+      >
+        {props.children}
+      </div>
+    </div>
+  );
+}
+interface PropsType {
+  isOpen: boolean;
+  noArrow: boolean;
+  toLeft: boolean;
+  className: string;
+  label: JSX.Element;
+  children: React.ReactNode;
+}
+Dropdown.defaultProps = {
+  isOpen: false,
+  noArrow: false,
+  toLeft: false,
+  className: "",
+  label: <IconDots />,
+  children: (
+    <ul>
+      <li>
+        <a className="dropdown-item" href="#go-to-somewhere">
+          Action
+        </a>
+      </li>
+      <li>
+        <a className="dropdown-item" href="#go-to-somewhere">
+          Another action
+        </a>
+      </li>
+      <li>
+        <a className="dropdown-item" href="#go-to-somewhere">
+          Something else here
+        </a>
+      </li>
+      <li>
+        <hr className="dropdown-divider" />
+      </li>
+      <li>
+        <a className="dropdown-item" href="#go-to-somewhere">
+          Separated link
+        </a>
+      </li>
+    </ul>
+  ),
+};
+
+export default Dropdown;
